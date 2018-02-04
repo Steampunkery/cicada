@@ -373,6 +373,16 @@ pub fn run_pipeline(
         if isatty {
             p.before_exec(move || {
                 unsafe {
+                    use libc::{c_int, c_void, sighandler_t};
+                    extern fn handler(_: c_int) {
+                        println!("Hello SIGTSTP for subprocess");
+                    }
+                    fn get_handler() -> sighandler_t {
+                        handler as extern fn(c_int) as *mut c_void as sighandler_t
+                    }
+                    libc::signal(libc::SIGTSTP, get_handler());
+                    println!("handle SIGTSTP set for {}!", libc::getpid());
+
                     if i == 0 {
                         // set the first process as progress group leader
                         let pid = libc::getpid();

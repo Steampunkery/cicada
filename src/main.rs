@@ -64,6 +64,17 @@ fn main() {
     history::init(&mut rl);
     rl.set_completer(Rc::new(completers::CicadaCompleter));
 
+    unsafe {
+        extern fn handler(_: c_int) {
+            log!("Hello SIGTSTP");
+        }
+        use libc::{c_int, c_void, sighandler_t};
+        fn get_handler() -> sighandler_t {
+            handler as extern fn(c_int) as *mut c_void as sighandler_t
+        }
+        libc::signal(libc::SIGTSTP, libc::SIG_IGN);
+    }
+
     let mut status = 0;
     loop {
         let prompt = libs::prompt::get_prompt(status);
