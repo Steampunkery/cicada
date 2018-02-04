@@ -62,7 +62,7 @@ fn main() {
         }
     }
     history::init(&mut rl);
-    rl.set_completer(Rc::new(completers::CicadaCompleter));
+    rl.set_completer(Rc::new(completers::CicadaCompleter{sh: Rc::new(sh.clone())}));
 
     unsafe {
         extern fn handler(_: c_int) {

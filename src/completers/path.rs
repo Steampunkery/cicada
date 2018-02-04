@@ -1,17 +1,22 @@
 use std::collections::HashSet;
 use std::env;
 use std::fs::read_dir;
+use std::io::Write;
 use std::iter::FromIterator;
-use std::path::{is_separator, MAIN_SEPARATOR};
 use std::os::unix::fs::PermissionsExt;
+use std::path::{is_separator, MAIN_SEPARATOR};
+use std::rc::Rc;
 
 use linefeed::Reader;
 use linefeed::terminal::Terminal;
 use linefeed::complete::{Completer, Completion, Suffix};
 
 use tools;
+use shell;
 
-pub struct BinCompleter;
+pub struct BinCompleter {
+    pub sh: Rc<shell::Shell>,
+}
 pub struct CdCompleter;
 pub struct PathCompleter;
 
@@ -23,7 +28,16 @@ impl<Term: Terminal> Completer<Term> for BinCompleter {
         _start: usize,
         _end: usize,
     ) -> Option<Vec<Completion>> {
-        Some(complete_bin(word))
+        // TODO: use RC::into_raw() instead
+        let sh = Rc::try_unwrap(self.sh.clone());
+        match sh {
+            Ok(x) => {
+                Some(complete_bin(&x, word))
+            }
+            Err(e) => {
+                Some(complete_bin(&e, word))
+            }
+        }
     }
 }
 
@@ -111,17 +125,41 @@ fn split_path(path: &str) -> (Option<&str>, &str) {
 }
 
 /// Returns a sorted list of paths whose prefix matches the given path.
-fn complete_bin(path: &str) -> Vec<Completion> {
+fn complete_bin(sh: &shell::Shell, path: &str) -> Vec<Completion> {
     let mut res = Vec::new();
     let (_, fname) = split_path(path);
     let env_path;
     match env::var("PATH") {
         Ok(x) => env_path = x,
         Err(e) => {
-            println!("cicada: env error when complete_bin: {:?}", e);
+            println_stderr!("cicada: env error when complete_bin: {:?}", e);
             return res;
         }
     }
+
+    // handle alias and builtins
+    for alias in sh.alias.keys() {
+        if !alias.starts_with(fname) {
+            continue;
+        }
+        res.push(Completion {
+            completion: alias.to_owned(),
+            display: None,
+            suffix: Suffix::Default,
+        });
+    }
+    let builtins = vec!["cd", "cinfo", "exec", "exit", "export", "history", "vox"];
+    for item in &builtins {
+        if !item.starts_with(fname) {
+            continue;
+        }
+        res.push(Completion {
+            completion: item.to_string(),
+            display: None,
+            suffix: Suffix::Default,
+        });
+    }
+
     let vec_path: Vec<&str> = env_path.split(':').collect();
     let path_list: HashSet<&str> = HashSet::from_iter(vec_path.iter().cloned());
 
@@ -136,7 +174,7 @@ fn complete_bin(path: &str) -> Vec<Completion> {
                             match entry.metadata() {
                                 Ok(x) => _mode = x,
                                 Err(e) => {
-                                    println!("cicada: metadata error: {:?}", e);
+                                    println_stderr!("cicada: metadata error: {:?}", e);
                                     continue;
                                 }
                             }
