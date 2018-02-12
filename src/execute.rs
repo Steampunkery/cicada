@@ -3,6 +3,7 @@ use std::error::Error as STDError;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::{self, Error, Read, Write};
+use std::mem;
 use std::os::unix::io::{FromRawFd, IntoRawFd};
 use std::os::unix::process::CommandExt;
 use std::path::Path;
@@ -17,6 +18,7 @@ use tools::{self, clog, CommandResult};
 use builtins;
 use parsers;
 use shell;
+use libs;
 
 extern "C" fn handle_sigchld(_: i32) {
     // When handle waitpid here & for commands like `ls | cmd-not-exist`
@@ -30,6 +32,15 @@ extern "C" fn handle_sigchld(_: i32) {
         let pid = libc::waitpid(-1, ptr, libc::WNOHANG);
     }
     */
+}
+
+extern "C" fn handle_sigtstp(_: i32) {
+    unsafe {
+        libs::signals::block();
+        log!("[sub] received SIGTSTP");
+        libc::kill(libc::getpid(), libc::SIGTSTP);
+        libs::signals::unblock();
+    }
 }
 
 /// Entry point for non-ttys (e.g. Cmd-N on MacVim)
@@ -292,7 +303,6 @@ pub fn run_pipeline(
     capture_stdout: bool,
     envs: Option<HashMap<String, String>>,
 ) -> (i32, bool, Option<Output>) {
-
     let sig_action = signal::SigAction::new(
         signal::SigHandler::Handler(handle_sigchld),
         signal::SaFlags::empty(),
@@ -364,6 +374,7 @@ pub fn run_pipeline(
     }
 
     for cmd in &mut cmds {
+        log!("building cmd: {:?}", cmd);
         let program = &cmd[0];
         // treat `(ls)` as `ls`
         let mut p = Command::new(program.trim_matches(|c| c == '(' || c == ')'));
@@ -373,24 +384,29 @@ pub fn run_pipeline(
         if isatty {
             p.before_exec(move || {
                 unsafe {
-                    use libc::{c_int, c_void, sighandler_t};
-                    extern fn handler(_: c_int) {
-                        println!("Hello SIGTSTP for subprocess");
-                    }
-                    fn get_handler() -> sighandler_t {
-                        handler as extern fn(c_int) as *mut c_void as sighandler_t
-                    }
-                    libc::signal(libc::SIGTSTP, get_handler());
-                    println!("handle SIGTSTP set for {}!", libc::getpid());
-
+                    libs::signals::block();
                     if i == 0 {
                         // set the first process as progress group leader
                         let pid = libc::getpid();
                         libc::setpgid(0, pid);
+
+                        let sig_action = signal::SigAction::new(
+                            signal::SigHandler::Handler(handle_sigtstp),
+                            signal::SaFlags::empty(),
+                            signal::SigSet::empty(),
+                        );
+                        match signal::sigaction(signal::SIGTSTP, &sig_action) {
+                            Ok(_) => {
+                                log!("[sub] set SIGTSTP to handler");
+                            }
+                            Err(e) => println!("sigaction error: {:?}", e),
+                        }
+
                     } else {
                         libc::setpgid(0, pgid as i32);
                     }
                 }
+                libs::signals::unblock();
                 Ok(())
             });
         }

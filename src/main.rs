@@ -65,14 +65,27 @@ fn main() {
     rl.set_completer(Rc::new(completers::CicadaCompleter{sh: Rc::new(sh.clone())}));
 
     unsafe {
+        libc::signal(libc::SIGTSTP, libc::SIG_DFL);
+        log!("[main] set SIGTSTP handle in default");
+
+        /*
         extern fn handler(_: c_int) {
-            log!("Hello SIGTSTP");
+            log!("[main] Recived SIGTSTP in shell main proc");
         }
+
         use libc::{c_int, c_void, sighandler_t};
         fn get_handler() -> sighandler_t {
             handler as extern fn(c_int) as *mut c_void as sighandler_t
         }
-        libc::signal(libc::SIGTSTP, libc::SIG_IGN);
+
+        if libc::signal(libc::SIGTSTP, libc::SIG_IGN) == libc::SIG_DFL {
+            libc::signal(libc::SIGTSTP, get_handler());
+            log!("[main] set signal to handler.");
+        } else {
+            log!("[main] the original signal is not SIG_DFL!!!");
+            libc::signal(libc::SIGTSTP, get_handler());
+        }
+        */
     }
 
     let mut status = 0;
