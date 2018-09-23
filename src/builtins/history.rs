@@ -4,9 +4,9 @@ use std::path::Path;
 use sqlite;
 use sqlite::State;
 
-use types::Tokens;
 use history;
 use parsers;
+use types::Tokens;
 
 pub fn run(tokens: &Tokens) -> i32 {
     let args = parsers::parser_line::tokens_to_args(&tokens);

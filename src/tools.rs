@@ -13,7 +13,6 @@ use libc;
 use parsers;
 use shell;
 
-#[macro_export]
 macro_rules! println_stderr {
     ($fmt:expr) => (
         match writeln!(&mut ::std::io::stderr(), $fmt) {
@@ -57,6 +56,11 @@ pub fn clog(s: &str) {
         pid,
         s,
     );
+    let s = if s.ends_with('\n') {
+        s
+    } else {
+        format!("{}\n", s)
+    };
     match cfile.write_all(s.as_bytes()) {
         Ok(_) => {}
         Err(e) => {
@@ -66,13 +70,12 @@ pub fn clog(s: &str) {
     }
 }
 
-#[macro_export]
 macro_rules! log {
     ($fmt:expr) => (
-        clog(concat!($fmt, "\n"));
+        clog($fmt);
     );
     ($fmt:expr, $($arg:tt)*) => (
-        clog(format!(concat!($fmt, "\n"), $($arg)*).as_str());
+        clog(&format!($fmt, $($arg)*));
     );
 }
 

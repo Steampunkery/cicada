@@ -5,11 +5,11 @@ use std::path::Path;
 
 use regex::Regex;
 
-use types::Tokens;
 use builtins;
 use parsers;
 use shell;
 use tools;
+use types::Tokens;
 
 pub fn load_rcfile(sh: &mut shell::Shell) {
     // make "/usr/local/bin" as the first item in PATH

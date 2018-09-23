@@ -3,9 +3,9 @@ use std::error::Error;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use tools;
 use parsers;
 use shell;
+use tools;
 
 use types::Tokens;
 

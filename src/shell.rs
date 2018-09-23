@@ -8,11 +8,11 @@ use std::mem;
 use glob;
 use regex::Regex;
 
-use types::Tokens;
 use execute;
 use libs;
 use parsers;
 use tools::{self, clog};
+use types::Tokens;
 
 #[derive(Debug, Clone)]
 pub struct Shell {

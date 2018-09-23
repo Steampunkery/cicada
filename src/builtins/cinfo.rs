@@ -1,5 +1,5 @@
-use types::Tokens;
 use libs;
+use types::Tokens;
 
 pub fn run(_tokens: &Tokens) -> i32 {
     const VERSION: &str = env!("CARGO_PKG_VERSION");

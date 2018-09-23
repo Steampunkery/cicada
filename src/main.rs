@@ -21,7 +21,6 @@ use linefeed::{Interface, ReadResult};
 #[macro_use]
 mod tools;
 
-mod types;
 mod builtins;
 mod completers;
 mod execute;
@@ -30,6 +29,7 @@ mod libs;
 mod parsers;
 mod rcfile;
 mod shell;
+mod types;
 
 use tools::clog;
 

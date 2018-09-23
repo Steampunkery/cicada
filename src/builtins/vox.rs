@@ -2,9 +2,9 @@ use std::env;
 use std::fs::{self, read_dir};
 use std::path::Path;
 
-use types::Tokens;
 use parsers;
 use shell;
+use types::Tokens;
 
 fn in_env() -> bool {
     if let Ok(x) = env::var("VIRTUAL_ENV") {

@@ -155,10 +155,7 @@ fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String> {
     envs
 }
 
-fn line_to_tokens(
-    sh: &mut shell::Shell,
-    line: &str,
-) -> (Tokens, HashMap<String, String>) {
+fn line_to_tokens(sh: &mut shell::Shell, line: &str) -> (Tokens, HashMap<String, String>) {
     let mut tokens = parsers::parser_line::cmd_to_tokens(line);
     shell::do_expansion(sh, &mut tokens);
     let envs = drain_env_tokens(&mut tokens);
@@ -317,7 +314,7 @@ pub fn run_pipeline(
     }
 
     if log_cmd {
-        log!("run: {}", info);
+        log!("run: {}", info.trim());
     }
 
     if length == 0 {

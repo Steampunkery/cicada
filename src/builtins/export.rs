@@ -1,7 +1,7 @@
-use types::Tokens;
 use regex::Regex;
 use std::env;
 use std::io::Write;
+use types::Tokens;
 
 use parsers;
 use shell;
