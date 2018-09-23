@@ -8,6 +8,7 @@ use std::mem;
 use glob;
 use regex::Regex;
 
+use types::Tokens;
 use execute;
 use libs;
 use parsers;
@@ -127,7 +128,7 @@ fn needs_globbing(line: &str) -> bool {
     false
 }
 
-pub fn expand_glob(tokens: &mut Vec<(String, String)>) {
+pub fn expand_glob(tokens: &mut Tokens) {
     let mut idx: usize = 0;
 
     let mut buff: HashMap<usize, Vec<String>> = HashMap::new();
@@ -246,7 +247,7 @@ pub fn extend_env_blindly(sh: &Shell, token: &str) -> String {
     result
 }
 
-fn expand_brace(tokens: &mut Vec<(String, String)>) {
+fn expand_brace(tokens: &mut Tokens) {
     let mut idx: usize = 0;
     let mut buff: HashMap<usize, Vec<String>> = HashMap::new();
     for (sep, line) in tokens.iter() {
@@ -342,7 +343,7 @@ pub fn expand_home_string(text: &mut String) {
     }
 }
 
-fn expand_home(tokens: &mut Vec<(String, String)>) {
+fn expand_home(tokens: &mut Tokens) {
     let mut idx: usize = 0;
 
     let mut buff: HashMap<usize, String> = HashMap::new();
@@ -385,7 +386,7 @@ fn env_in_token(token: &str) -> bool {
     tools::re_contains(token, r"\$\{?[a-zA-Z][a-zA-Z0-9_]+\}?")
 }
 
-pub fn expand_env(sh: &Shell, tokens: &mut Vec<(String, String)>) {
+pub fn expand_env(sh: &Shell, tokens: &mut Tokens) {
     let mut idx: usize = 0;
     let mut buff: HashMap<usize, String> = HashMap::new();
 
@@ -409,7 +410,7 @@ fn should_do_dollar_command_extension(line: &str) -> bool {
     tools::re_contains(line, r"\$\([^\)]+\)")
 }
 
-fn do_command_substitution_for_dollar(tokens: &mut Vec<(String, String)>) {
+fn do_command_substitution_for_dollar(tokens: &mut Tokens) {
     let mut idx: usize = 0;
     let mut buff: HashMap<usize, String> = HashMap::new();
 
@@ -479,7 +480,7 @@ fn do_command_substitution_for_dollar(tokens: &mut Vec<(String, String)>) {
     }
 }
 
-fn do_command_substitution_for_dot(tokens: &mut Vec<(String, String)>) {
+fn do_command_substitution_for_dot(tokens: &mut Tokens) {
     let mut idx: usize = 0;
     let mut buff: HashMap<usize, String> = HashMap::new();
     for (sep, token) in tokens.iter() {
@@ -569,12 +570,12 @@ fn do_command_substitution_for_dot(tokens: &mut Vec<(String, String)>) {
     }
 }
 
-fn do_command_substitution(tokens: &mut Vec<(String, String)>) {
+fn do_command_substitution(tokens: &mut Tokens) {
     do_command_substitution_for_dot(tokens);
     do_command_substitution_for_dollar(tokens);
 }
 
-pub fn do_expansion(sh: &Shell, tokens: &mut Vec<(String, String)>) {
+pub fn do_expansion(sh: &Shell, tokens: &mut Tokens) {
     expand_home(tokens);
     expand_brace(tokens);
     expand_env(sh, tokens);

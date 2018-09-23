@@ -26,7 +26,8 @@ mod libs;
 mod parsers;
 mod shell;
 
-use tools::CommandResult;
+use types::CommandResult;
+use types::Tokens;
 
 /// Parse command line to multiple commands.
 ///
@@ -55,7 +56,7 @@ pub fn line_to_cmds(line: &str) -> Vec<String> {
 ///     ("`", "which wc"),
 /// ]
 /// ```
-pub fn cmd_to_tokens(cmd: &str) -> Vec<(String, String)> {
+pub fn cmd_to_tokens(cmd: &str) -> Tokens {
     return parsers::parser_line::cmd_to_tokens(cmd);
 }
 

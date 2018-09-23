@@ -17,8 +17,9 @@ use nom::IResult;
 use builtins;
 use parsers;
 use shell;
-use tools::{self, clog, CommandResult};
-use types;
+use tools::{self, clog};
+use types::CommandResult;
+use types::Tokens;
 
 extern "C" fn handle_sigchld(_: i32) {
     // When handle waitpid here & for commands like `ls | cmd-not-exist`
@@ -51,7 +52,7 @@ pub fn handle_non_tty(sh: &mut shell::Shell) {
 }
 
 // TODO: write tests
-fn tokens_to_cmd_tokens(tokens: &types::Tokens) -> Vec<types::Tokens> {
+fn tokens_to_cmd_tokens(tokens: &Tokens) -> Vec<Tokens> {
     let mut cmd = Vec::new();
     let mut cmds = Vec::new();
     for token in tokens {
@@ -122,7 +123,7 @@ pub fn run_procs(sh: &mut shell::Shell, line: &str, tty: bool) -> i32 {
     status
 }
 
-fn drain_env_tokens(tokens: &mut Vec<(String, String)>) -> HashMap<String, String> {
+fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String> {
     let mut envs: HashMap<String, String> = HashMap::new();
     let mut n = 0;
     for (sep, text) in tokens.iter() {
@@ -157,7 +158,7 @@ fn drain_env_tokens(tokens: &mut Vec<(String, String)>) -> HashMap<String, Strin
 fn line_to_tokens(
     sh: &mut shell::Shell,
     line: &str,
-) -> (Vec<(String, String)>, HashMap<String, String>) {
+) -> (Tokens, HashMap<String, String>) {
     let mut tokens = parsers::parser_line::cmd_to_tokens(line);
     shell::do_expansion(sh, &mut tokens);
     let envs = drain_env_tokens(&mut tokens);
@@ -266,7 +267,7 @@ fn run_calc_int(line: &str) -> Result<i64, String> {
 
 #[allow(clippy::cyclomatic_complexity)]
 pub fn run_pipeline(
-    tokens: &types::Tokens,
+    tokens: &Tokens,
     redirect_from: &str,
     background: bool,
     tty: bool,

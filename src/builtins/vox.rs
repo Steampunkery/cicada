@@ -2,6 +2,7 @@ use std::env;
 use std::fs::{self, read_dir};
 use std::path::Path;
 
+use types::Tokens;
 use parsers;
 use shell;
 
@@ -73,7 +74,7 @@ fn enter_env(sh: &shell::Shell, path: &str) -> i32 {
     let path_env = format!("{}/{}", home_envs, path);
     env::set_var("VIRTUAL_ENV", &path_env);
     let path_new = String::from("${VIRTUAL_ENV}/bin:$PATH");
-    let mut tokens: Vec<(String, String)> = Vec::new();
+    let mut tokens: Tokens = Vec::new();
     tokens.push((String::new(), path_new));
     shell::expand_env(sh, &mut tokens);
     env::set_var("PATH", &tokens[0].1);
@@ -96,7 +97,7 @@ fn exit_env(sh: &shell::Shell) -> i32 {
     let mut _tokens: Vec<&str> = env_path.split(':').collect();
     let mut path_virtual_env = String::from("${VIRTUAL_ENV}/bin");
     // shell::extend_env(sh, &mut path_virtual_env);
-    let mut tokens: Vec<(String, String)> = Vec::new();
+    let mut tokens: Tokens = Vec::new();
     tokens.push((String::new(), path_virtual_env));
     shell::expand_env(sh, &mut tokens);
     path_virtual_env = tokens[0].1.clone();
@@ -110,7 +111,7 @@ fn exit_env(sh: &shell::Shell) -> i32 {
     0
 }
 
-pub fn run(sh: &shell::Shell, tokens: &Vec<(String, String)>) -> i32 {
+pub fn run(sh: &shell::Shell, tokens: &Tokens) -> i32 {
     let args = parsers::parser_line::tokens_to_args(&tokens);
     if args.len() == 2 && args[1] == "ls" {
         list_envs()

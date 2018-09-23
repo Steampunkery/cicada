@@ -5,6 +5,7 @@ use std::path::Path;
 
 use regex::Regex;
 
+use types::Tokens;
 use builtins;
 use parsers;
 use shell;
@@ -57,7 +58,7 @@ fn handle_line(sh: &mut shell::Shell, line: &str) {
     }
 }
 
-fn handle_env(sh: &shell::Shell, tokens: &Vec<(String, String)>) {
+fn handle_env(sh: &shell::Shell, tokens: &Tokens) {
     builtins::export::run(sh, tokens);
 }
 

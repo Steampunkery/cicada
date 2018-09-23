@@ -4,32 +4,16 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::os::unix::io::{FromRawFd, IntoRawFd};
 use std::process::Stdio;
-use time;
 
 use regex::Regex;
+use time;
 
 use execute;
 use libc;
 use parsers;
 use shell;
 
-#[derive(Clone, Debug, Default)]
-pub struct CommandResult {
-    pub status: i32,
-    pub stdout: String,
-    pub stderr: String,
-}
-
-impl CommandResult {
-    pub fn new() -> CommandResult {
-        CommandResult {
-            status: 0,
-            stdout: String::new(),
-            stderr: String::new(),
-        }
-    }
-}
-
+#[macro_export]
 macro_rules! println_stderr {
     ($fmt:expr) => (
         match writeln!(&mut ::std::io::stderr(), $fmt) {
@@ -82,6 +66,7 @@ pub fn clog(s: &str) {
     }
 }
 
+#[macro_export]
 macro_rules! log {
     ($fmt:expr) => (
         clog(concat!($fmt, "\n"));
