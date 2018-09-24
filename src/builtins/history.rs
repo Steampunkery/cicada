@@ -56,8 +56,16 @@ fn list_current_history(conn: &sqlite::Connection) -> i32 {
                 match statement.next() {
                     Ok(x) => {
                         if let State::Row = x {
-                            let rowid = if let Ok(x) = statement.read::<String>(0) { x } else { String::new() };
-                            let inp = if let Ok(x) = statement.read::<String>(1) { x } else { String::new() };
+                            let rowid = if let Ok(x) = statement.read::<String>(0) {
+                                x
+                            } else {
+                                String::new()
+                            };
+                            let inp = if let Ok(x) = statement.read::<String>(1) {
+                                x
+                            } else {
+                                String::new()
+                            };
                             vec.push((rowid, inp));
                         } else {
                             break;
@@ -97,8 +105,16 @@ fn search_history(conn: &sqlite::Connection, q: &str) {
                 match statement.next() {
                     Ok(x) => {
                         if let State::Row = x {
-                            let rowid = if let Ok(x) = statement.read::<String>(0) { x } else { String::new() };
-                            let inp = if let Ok(x) = statement.read::<String>(1) { x } else { String::new() };
+                            let rowid = if let Ok(x) = statement.read::<String>(0) {
+                                x
+                            } else {
+                                String::new()
+                            };
+                            let inp = if let Ok(x) = statement.read::<String>(1) {
+                                x
+                            } else {
+                                String::new()
+                            };
                             vec.push((rowid, inp));
                         } else {
                             break;
