@@ -78,9 +78,6 @@ fn handle_lv1_string(res: &mut Vec<Completion>, value: &str, word: &str) {
                     if s.trim().is_empty() {
                         continue;
                     }
-                    if !s.starts_with(word) {
-                        continue;
-                    }
                     handle_lv1_string(res, s, word);
                 }
             }
