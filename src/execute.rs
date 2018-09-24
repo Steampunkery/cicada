@@ -262,7 +262,7 @@ fn run_calc_int(line: &str) -> Result<i64, String> {
     }
 }
 
-#[allow(clippy::cyclomatic_complexity)]
+// #[allow(clippy::cyclomatic_complexity)]
 pub fn run_pipeline(
     tokens: &Tokens,
     redirect_from: &str,
